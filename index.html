@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Portal - Complete Management System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5; color: #333; }
+        .container { display: flex; min-height: 100vh; }
+        .login-container { width: 100%; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        .login-box h1 { text-align: center; margin-bottom: 30px; color: #667eea; }
+        .logo-placeholder { text-align: center; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 5px rgba(102,126,234,0.3); }
+        .error { color: #e74c3c; font-size: 12px; margin-top: 5px; display: none; }
+        .error.show { display: block; }
+        .btn { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { background: #5568d3; }
+        .btn-secondary { background: #95a5a6; margin-right: 10px; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #229954; }
+        .link { text-align: center; margin-top: 20px; }
+        .link a { color: #667eea; text-decoration: none; cursor: pointer; }
+        .sidebar { width: 250px; background: #2c3e50; color: white; padding: 20px; overflow-y: auto; position: fixed; height: 100vh; }
+        .sidebar h2 { margin-bottom: 30px; text-align: center; font-size: 18px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 10px; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
+        .nav-item:hover { background: #34495e; }
+        .nav-item.active { background: #667eea; font-weight: 600; }
+        .main-content { margin-left: 250px; flex: 1; display: flex; flex-direction: column; }
+        .header { background: white; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #2c3e50; }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .logout-btn { padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .content { padding: 30px; flex: 1; overflow-y: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card h3 { color: #667eea; font-size: 32px; margin-bottom: 10px; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #2c3e50; color: white; padding: 15px; text-align: left; font-weight: 600; }
+        td { padding: 12px 15px; border-bottom: 1px solid #ddd; }
+        tr:hover { background: #f9f9f9; }
+        .action-buttons { display: flex; gap: 10px; }
+        .btn-small { padding: 6px 12px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-edit { background: #3498db; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 15px; }
+        .modal-header h2 { margin: 0; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .role-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .role-option { padding: 15px; border: 2px solid #ddd; border-radius: 5px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .role-option:hover { border-color: #667eea; }
+        .role-option.selected { border-color: #667eea; background: #f0f4ff; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-item input { width: auto; margin-right: 10px; }
+        @media (max-width: 768px) { .sidebar { width: 200px; } .main-content { margin-left: 200px; } .stats-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .sidebar { display: none; } .main-content { margin-left: 0; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="page active">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="logo-placeholder"><img src="logo.jpg" alt="School Logo" style="width: 100px; height: 100px;"></div>
+                <h1>School Portal</h1>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email or Roll Number</label>
+                        <input type="text" id="loginEmail" required placeholder="Enter email or roll number">
+                        <div class="error" id="loginEmailError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required placeholder="Enter password">
+                        <div class="error" id="loginPasswordError"></div>
+                    </div>
+                    <button type="button" class="btn" onclick="handleLogin()">Login</button>
+                </form>
+                <div class="link"><p>Don't have an account? <a onclick="goToRegister()" style="cursor: pointer; color: #667eea;">Register here</a></p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTRATION PAGE -->
+    <div id="registerPage" class="page">
+        <div class="login-container">
+            <div class="login-box" style="max-width: 600px;">
+                <div style="text-align: center; margin-bottom: 20px;"><a onclick="goToLogin()" style="color: #667eea; cursor: pointer; font-weight: bold;">← Back to Login</a></div>
+                <h1>Create New Account</h1>
+                <div class="role-selection">
+                    <div class="role-option selected" onclick="selectRole('student')"><input type="radio" name="role" value="student" checked> <label style="margin: 0; cursor: pointer;">Register as Student</label></div>
+                    <div class="role-option" onclick="selectRole('teacher')"><input type="radio" name="role" value="teacher"> <label style="margin: 0; cursor: pointer;">Register as Teacher</label></div>
+                </div>
+                <form id="registerForm">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="regName" required placeholder="Enter your full name"><div class="error" id="regNameError"></div></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="regEmail" required placeholder="Enter your email"><div class="error" id="regEmailError"></div></div>
+                    <div id="studentFields">
+                        <div class="form-row">
+                            <div class="form-group"><label>Roll Number</label><input type="text" id="regRoll" placeholder="e.g., CS252029"><div class="error" id="regRollError"></div></div>
+                            <div class="form-group"><label>Branch</label><select id="regBranch"><option value="">Select Branch</option><option value="Computer Science">Computer Science</option><option value="Information Technology">Information Technology</option><option value="Mechanical">Mechanical</option><option value="Electronics">Electronics</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Year</label><select id="regYear"><option value="">Select Year</option><option value="1st Year">1st Year</option><option value="2nd Year">2nd Year</option><option value="3rd Year">3rd Year</option><option value="4th Year">4th Year</option></select></div>
+                        </div>
+                    </div>
+                    <div id="teacherFields" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group"><label>Employee ID</label><input type="text" id="regEmpId" placeholder="e.g., EMP001"><div class="error" id="regEmpIdError"></div></div>
+                            <div class="form-group"><label>Department</label><select id="regDept"><option value="">Select Department</option><option value="Computer Science">Computer Science</option><option value="IT">IT</option><option value="Mechanical">Mechanical</option><option value="Electronics">Electronics</option></select></div>
+                        </div>
+                        <div class="form-group"><label>Subjects (Select at least 1)</label><div class="checkbox-group"><div class="checkbox-item"><input type="checkbox" name="subjects" value="Data Structures"> Data Structures</div><div class="checkbox-item"><input type="checkbox" name="subjects" value="Web Development"> Web Development</div><div class="checkbox-item"><input type="checkbox" name="subjects" value="Database Management"> Database</div><div class="checkbox-item"><input type="checkbox" name="subjects" value="Algorithms"> Algorithms</div></div><div class="error" id="regSubjectsError"></div></div>
+                        <div class="form-group"><label>Qualifications</label><textarea id="regQualifications" rows="3" placeholder="e.g., B.Tech, M.Tech, Ph.D"></textarea></div>
+                    </div>
+                    <div class="form-group"><label>Phone Number</label><input type="tel" id="regPhone" required placeholder="10-digit number"><div class="error" id="regPhoneError"></div></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Password</label><input type="password" id="regPassword" required placeholder="Min 6 characters"><div class="error" id="regPasswordError"></div></div>
+                        <div class="form-group"><label>Confirm Password</label><input type="password" id="regConfirmPassword" required placeholder="Re-enter password"><div class="error" id="regConfirmPasswordError"></div></div>
+                    </div>
+                    <button type="button" class="btn" onclick="handleRegister()">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardArea" class="container" style="display: none;">
+        <div class="sidebar"><h2>School Portal</h2><nav id="sidebarMenu"></nav></div>
+        <div class="main-content">
+            <div class="header"><h1 id="pageTitle">Dashboard</h1><div class="user-info"><span id="userDisplay">User</span><button class="logout-btn" onclick="handleLogout()">Logout</button></div></div>
+            <div class="content">
+                <div id="adminDashboard" class="page"><h2>Admin Dashboard</h2><div id="statsContainer" class="stats-grid"></div><h3 style="margin-top: 30px;">Quick Actions</h3><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;" id="quickActionsContainer"></div></div>
+                <div id="subjectsPage" class="page"><h2>Subject Management</h2><button class="btn" onclick="openAddSubjectModal()" style="margin-bottom: 20px; width: auto;">+ Add New Subject</button><div class="table-container"><table id="subjectsTable"><thead><tr><th>Code</th><th>Name</th><th>Semester</th><th>Department</th><th>Credits</th><th>Actions</th></tr></thead><tbody id="subjectsTableBody"></tbody></table></div></div>
+                <div id="classesPage" class="page"><h2>Class Management</h2><button class="btn" onclick="openAddClassModal()" style="margin-bottom: 20px; width: auto;">+ Add New Class</button><div class="table-container"><table id="classesTable"><thead><tr><th>Subject</th><th>Teacher</th><th>Schedule</th><th>Room</th><th>Capacity</th><th>Actions</th></tr></thead><tbody id="classesTableBody"></tbody></table></div></div>
+                <div id="teachersPage" class="page"><h2>Teacher Management</h2><div class="table-container"><table id="teachersTable"><thead><tr><th>Name</th><th>Email</th><th>Employee ID</th><th>Department</th><th>Actions</th></tr></thead><tbody id="teachersTableBody"></tbody></table></div></div>
+                <div id="studentsPage" class="page"><h2>Student Management</h2><div class="table-container"><table id="studentsTable"><thead><tr><th>Name</th><th>Email</th><th>Roll Number</th><th>Branch</th><th>Year</th><th>Actions</th></tr></thead><tbody id="studentsTableBody"></tbody></table></div></div>
+                <div id="attendancePage" class="page"><h2>Attendance Management</h2><button class="btn" onclick="openMarkAttendanceModal()" style="margin-bottom: 20px; width: auto;">+ Mark Attendance</button><div class="table-container"><table id="attendanceTable"><thead><tr><th>Student</th><th>Class</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="attendanceTableBody"></tbody></table></div></div>
+                <div id="resultsPage" class="page"><h2>Results Management</h2><button class="btn" onclick="openAddResultModal()" style="margin-bottom: 20px; width: auto;">+ Add Result</button><div class="table-container"><table id="resultsTable"><thead><tr><th>Student</th><th>Subject</th><th>Marks</th><th>Total</th><th>Grade</th><th>Actions</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div></div>
+                <div id="approvalsPage" class="page"><h2>Pending Approvals</h2><div id="pendingApprovalsContainer"></div></div>
+                <div id="studentAttendancePage" class="page"><h2>My Attendance</h2><div id="studentAttendanceContainer"></div></div>
+                <div id="studentResultsPage" class="page"><h2>My Results</h2><div class="table-container"><table id="studentResultsTable"><thead><tr><th>Subject</th><th>Marks</th><th>Total</th><th>Grade</th></tr></thead><tbody id="studentResultsTableBody"></tbody></table></div></div>
+                <div id="teacherClassesPage" class="page"><h2>My Classes</h2><div class="table-container"><table id="teacherClassesTable"><thead><tr><th>Subject</th><th>Schedule</th><th>Room</th><th>Students</th></tr></thead><tbody id="teacherClassesTableBody"></tbody></table></div></div>
+                <div id="profilePage" class="page"><h2>My Profile</h2><div style="background: white; padding: 20px; border-radius: 8px;"><div id="profileContent"></div></div></div>
+                <div id="aboutPage" class="page"><h2>About School</h2><div style="background: white; padding: 20px; border-radius: 8px;"><h3>National Institute of Technology</h3><p><strong>Established:</strong> 1981</p><p><strong>Location:</strong> Raipur, Chhattisgarh, India</p><p><strong>Mission:</strong> To provide quality education and foster research excellence in engineering and technology.</p></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="subjectModal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="subjectModalTitle">Add Subject</h2><button class="close-btn" onclick="closeModal('subjectModal')">&times;</button></div><div class="modal-body"><form id="subjectForm"><div class="form-group"><label>Subject Code</label><input type="text" id="subjectCode" required></div><div class="form-group"><label>Subject Name</label><input type="text" id="subjectName" required></div><div class="form-row"><div class="form-group"><label>Semester</label><select id="subjectSemester" required><option value="">Select</option><option value="1st">1st</option><option value="2nd">2nd</option><option value="3rd">3rd</option><option value="4th">4th</option></select></div><div class="form-group"><label>Department</label><select id="subjectDept" required><option value="">Select</option><option value="CS">CS</option><option value="IT">IT</option><option value="Mechanical">Mechanical</option><option value="Electronics">Electronics</option></select></div></div><div class="form-group"><label>Credits</label><input type="number" id="subjectCredits" min="1" max="6" required></div><div class="form-group"><label>Description</label><textarea id="subjectDescription" rows="3"></textarea></div><button type="button" class="btn" onclick="handleSaveSubject()">Save Subject</button></form></div></div></div>
+    <div id="classModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Add Class</h2><button class="close-btn" onclick="closeModal('classModal')">&times;</button></div><div class="modal-body"><form id="classForm"><div class="form-group"><label>Subject</label><select id="classSubject" required></select></div><div class="form-group"><label>Teacher</label><select id="classTeacher" required></select></div><div class="form-group"><label>Schedule</label><input type="text" id="classSchedule" placeholder="e.g., MWF 10:00 AM" required></div><div class="form-row"><div class="form-group"><label>Room Number</label><input type="text" id="classRoom" required></div><div class="form-group"><label>Capacity</label><input type="number" id="classCapacity" min="1" required></div></div><button type="button" class="btn" onclick="handleSaveClass()">Add Class</button></form></div></div></div>
+    <div id="attendanceModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Mark Attendance</h2><button class="close-btn" onclick="closeModal('attendanceModal')">&times;</button></div><div class="modal-body"><form id="attendanceForm"><div class="form-group"><label>Class</label><select id="attendanceClass" required onchange="loadStudentsForAttendance()"></select></div><div class="form-group"><label>Date</label><input type="date" id="attendanceDate" required></div><div id="studentAttendanceList"></div><button type="button" class="btn" onclick="handleMarkAttendance()">Save Attendance</button></form></div></div></div>
+    <div id="resultModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Add Result</h2><button class="close-btn" onclick="closeModal('resultModal')">&times;</button></div><div class="modal-body"><form id="resultForm"><div class="form-group"><label>Student</label><select id="resultStudent" required></select></div><div class="form-group"><label>Subject</label><select id="resultSubject" required></select></div><div class="form-row"><div class="form-group"><label>Marks</label><input type="number" id="resultMarks" min="0" max="100" required></div><div class="form-group"><label>Total</label><input type="number" id="resultTotal" value="100" required></div></div><div class="form-group"><label>Grade</label><select id="resultGrade" required><option value="A+">A+</option><option value="A">A</option><option value="B+">B+</option><option value="B">B</option><option value="C">C</option></select></div><button type="button" class="btn" onclick="handleSaveResult()">Save Result</button></form></div></div></div>
+
+    <script>
+        let db = null, currentUser = null;
+        
+        function initDB() {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('SchoolPortalDB', 1);
+                req.onerror = () => resolve();
+                req.onsuccess = () => { db = req.result; resolve(); };
+                req.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    const stores = ['users', 'subjects', 'classes', 'attendance', 'results', 'pending_registrations'];
+                    stores.forEach(store => { if (!db.objectStoreNames.contains(store)) db.createObjectStore(store, { keyPath: 'id' }); });
+                };
+            });
+        }
+
+        function dbAdd(store, data) { return new Promise((resolve, reject) => { const tx = db.transaction([store], 'readwrite'); const st = tx.objectStore(store); const req = st.add(data); req.onerror = () => reject(req.error); req.onsuccess = () => resolve(req.result); }); }
+        function dbGetAll(store) { return new Promise((resolve) => { const tx = db.transaction([store], 'readonly'); const st = tx.objectStore(store); const req = st.getAll(); req.onsuccess = () => resolve(req.result || []); }); }
+        function dbGet(store, key) { return new Promise((resolve) => { const tx = db.transaction([store], 'readonly'); const st = tx.objectStore(store); const req = st.get(key); req.onsuccess = () => resolve(req.result); }); }
+        function dbUpdate(store, data) { return new Promise((resolve) => { const tx = db.transaction([store], 'readwrite'); const st = tx.objectStore(store); const req = st.put(data); req.onsuccess = () => resolve(req.result); }); }
+        function dbDelete(store, key) { return new Promise((resolve) => { const tx = db.transaction([store], 'readwrite'); const st = tx.objectStore(store); const req = st.delete(key); req.onsuccess = () => resolve(); }); }
+
+        window.addEventListener('load', async () => { await initDB(); await initializeDefaultData(); });
+
+        async function initializeDefaultData() {
+            const users = await dbGetAll('users');
+            if (users.length === 0) {
+                const defaultUsers = [
+                    { id: 'admin001', email: 'admin@school.edu', password: 'admin123', name: 'Administrator', role: 'admin', status: 'approved' },
+                    { id: 'teacher001', email: 'teacher1@school.edu', password: 'teacher123', name: 'Dr. Amit Kumar', role: 'teacher', identifier: 'EMP001', department: 'CS', phone: '9876543220', status: 'approved' },
+                    { id: 'teacher002', email: 'teacher2@school.edu', password: 'teacher123', name: 'Ms. Priya Sharma', role: 'teacher', identifier: 'EMP002', department: 'CS', phone: '9876543221', status: 'approved' },
+                    { id: 'student001', email: 'student1@school.edu', password: 'student123', name: 'Prashant', role: 'student', identifier: 'CS252029', branch: 'CS', year: '2nd', phone: '9876543210', status: 'approved' },
+                    { id: 'student002', email: 'student2@school.edu', password: 'student123', name: 'Aniket', role: 'student', identifier: 'CS252030', branch: 'CS', year: '2nd', phone: '9876543211', status: 'approved' }
+                ];
+                for (let user of defaultUsers) await dbAdd('users', user);
+                const defaultSubjects = [
+                    { id: 'subj001', code: 'CS201', name: 'Data Structures', semester: '3rd', department: 'CS', credits: 4 },
+                    { id: 'subj002', code: 'CS202', name: 'Database', semester: '4th', department: 'CS', credits: 4 },
+                    { id: 'subj003', code: 'CS203', name: 'Web Dev', semester: '4th', department: 'CS', credits: 3 },
+                    { id: 'subj004', code: 'CS204', name: 'Algorithms', semester: '3rd', department: 'CS', credits: 4 }
+                ];
+                for (let s of defaultSubjects) await dbAdd('subjects', s);
+                const defaultClasses = [
+                    { id: 'class001', subject_id: 'subj001', teacher_id: 'teacher001', schedule: 'MWF 10:00', room: 'Lab-101', capacity: 50 },
+                    { id: 'class002', subject_id: 'subj002', teacher_id: 'teacher002', schedule: 'TTh 2:00', room: 'Lab-102', capacity: 50 }
+                ];
+                for (let c of defaultClasses) await dbAdd('classes', c);
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!email || !password) { alert('Fill all fields'); return; }
+            const users = await dbGetAll('users');
+            const user = users.find(u => (u.email === email || u.identifier === email) && u.password === password);
+            if (!user) { alert('Invalid credentials'); return; }
+            if (user.status !== 'approved') { alert('Account pending approval'); return; }
+            currentUser = user;
+            showDashboard();
+        }
+
+        function selectRole(role) {
+            document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.role-option').classList.add('selected');
+            if (role === 'student') {
+                document.getElementById('studentFields').style.display = 'block';
+                document.getElementById('teacherFields').style.display = 'none';
+            } else {
+                document.getElementById('studentFields').style.display = 'none';
+                document.getElementById('teacherFields').style.display = 'block';
+            }
+        }
+
+        async function handleRegister() {
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+            let errors = [];
+            if (!name) errors.push('Name required');
+            if (!email || !email.includes('@')) errors.push('Valid email required');
+            if (!phone || phone.length !== 10) errors.push('Phone must be 10 digits');
+            if (password.length < 6) errors.push('Password min 6 chars');
+            if (password !== confirmPassword) errors.push('Passwords do not match');
+
+            if (role === 'student') {
+                const roll = document.getElementById('regRoll').value.trim();
+                if (!roll) errors.push('Roll number required');
+            } else {
+                const empId = document.getElementById('regEmpId').value.trim();
+                if (!empId) errors.push('Employee ID required');
+            }
+
+            if (errors.length > 0) { alert('Errors:\n' + errors.join('\n')); return; }
+
+            const users = await dbGetAll('users');
+            if (users.some(u => u.email === email)) { alert('Email already registered'); return; }
+
+            const registration = {
+                id: 'pending_' + Date.now(),
+                role, name, email, phone, password,
+                status: 'pending'
+            };
+
+            if (role === 'student') {
+                registration.identifier = document.getElementById('regRoll').value.trim();
+                registration.branch = document.getElementById('regBranch').value;
+                registration.year = document.getElementById('regYear').value;
+            } else {
+                registration.identifier = document.getElementById('regEmpId').value.trim();
+                registration.department = document.getElementById('regDept').value;
+                registration.subjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked')).map(cb => cb.value);
+            }
+
+            try {
+                await dbAdd('pending_registrations', registration);
+                alert('✓ Registration successful! Pending admin approval.');
+                goToLogin();
+            } catch (error) {
+                alert('Error: ' + error);
+            }
+        }
+
+        function goToLogin() { showPage('loginPage'); document.getElementById('registerForm').reset(); }
+        function goToRegister() { showPage('registerPage'); document.getElementById('loginForm').reset(); }
+        function showPage(pageId) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); }
+
+        async function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('registerPage').style.display = 'none';
+            document.getElementById('dashboardArea').style.display = 'flex';
+            document.getElementById('userDisplay').textContent = currentUser.name + ' (' + currentUser.role + ')';
+            buildSidebar();
+            if (currentUser.role === 'admin') {
+                loadAdminDashboard();
+                loadSubjects();
+                loadTeachers();
+                loadStudents();
+                loadClasses();
+                loadAttendance();
+                loadResults();
+                loadPendingApprovals();
+                showPage('adminDashboard');
+            } else if (currentUser.role === 'teacher') {
+                loadTeacherClasses();
+                showPage('teacherClassesPage');
+            } else {
+                loadStudentAttendance();
+                loadStudentResults();
+                showPage('studentAttendancePage');
+            }
+            loadProfile();
+        }
+
+        function handleLogout() { currentUser = null; document.getElementById('dashboardArea').style.display = 'none'; document.getElementById('loginPage').style.display = 'block'; }
+
+        function buildSidebar() {
+            const menu = document.getElementById('sidebarMenu');
+            menu.innerHTML = '';
+            let items = currentUser.role === 'admin' ? [
+                { id: 'adminDashboard', label: 'Dashboard' },
+                { id: 'subjectsPage', label: 'Subjects' },
+                { id: 'classesPage', label: 'Classes' },
+                { id: 'teachersPage', label: 'Teachers' },
+                { id: 'studentsPage', label: 'Students' },
+                { id: 'attendancePage', label: 'Attendance' },
+                { id: 'resultsPage', label: 'Results' },
+                { id: 'approvalsPage', label: 'Approvals' },
+                { id: 'profilePage', label: 'Profile' },
+                { id: 'aboutPage', label: 'About' }
+            ] : currentUser.role === 'teacher' ? [
+                { id: 'teacherClassesPage', label: 'My Classes' },
+                { id: 'profilePage', label: 'Profile' },
+                { id: 'aboutPage', label: 'About' }
+            ] : [
+                { id: 'studentAttendancePage', label: 'Attendance' },
+                { id: 'studentResultsPage', label: 'Results' },
+                { id: 'profilePage', label: 'Profile' },
+                { id: 'aboutPage', label: 'About' }
+            ];
+            items.forEach((item, idx) => {
+                const nav = document.createElement('div');
+                nav.className = 'nav-item' + (idx === 0 ? ' active' : '');
+                nav.textContent = item.label;
+                nav.onclick = () => {
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    nav.classList.add('active');
+                    showPage(item.id);
+                };
+                menu.appendChild(nav);
+            });
+        }
+
+        async function loadAdminDashboard() {
+            const users = await dbGetAll('users');
+            const subjects = await dbGetAll('subjects');
+            const classes = await dbGetAll('classes');
+            const pending = (await dbGetAll('pending_registrations')).filter(r => r.status === 'pending');
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card"><h3>${users.filter(u => u.role === 'student').length}</h3><p>Students</p></div>
+                <div class="stat-card"><h3>${users.filter(u => u.role === 'teacher').length}</h3><p>Teachers</p></div>
+                <div class="stat-card"><h3>${subjects.length}</h3><p>Subjects</p></div>
+                <div class="stat-card"><h3>${classes.length}</h3><p>Classes</p></div>
+                <div class="stat-card"><h3>${pending.length}</h3><p>Pending</p></div>
+            `;
+        }
+
+        async function openAddSubjectModal() { document.getElementById('subjectModalTitle').textContent = 'Add Subject'; document.getElementById('subjectForm').reset(); openModal('subjectModal'); }
+        async function handleSaveSubject() {
+            const code = document.getElementById('subjectCode').value.trim();
+            const name = document.getElementById('subjectName').value.trim();
+            const semester = document.getElementById('subjectSemester').value;
+            const department = document.getElementById('subjectDept').value;
+            const credits = document.getElementById('subjectCredits').value;
+            if (!code || !name || !semester || !department || !credits) { alert('Fill all fields'); return; }
+            const subject = { id: 'subj_' + Date.now(), code, name, semester, department, credits: parseInt(credits) };
+            await dbAdd('subjects', subject);
+            closeModal('subjectModal');
+            loadSubjects();
+            alert('Subject added!');
+        }
+
+        async function loadSubjects() {
+            const subjects = await dbGetAll('subjects');
+            const tbody = document.getElementById('subjectsTableBody');
+            tbody.innerHTML = '';
+            subjects.forEach(s => {
+                tbody.innerHTML += `<tr><td>${s.code}</td><td>${s.name}</td><td>${s.semester}</td><td>${s.department}</td><td>${s.credits}</td><td><button class="btn-small btn-delete" onclick="deleteSubject('${s.id}')">Delete</button></td></tr>`;
+            });
+            const selects = [document.getElementById('classSubject'), document.getElementById('resultSubject')];
+            selects.forEach(sel => {
+                if (!sel) return;
+                const cur = sel.value;
+                sel.innerHTML = '<option value="">Select Subject</option>';
+                subjects.forEach(s => { const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name; sel.appendChild(opt); });
+                sel.value = cur;
+            });
+        }
+
+        async function deleteSubject(id) { if (!confirm('Delete?')) return; await dbDelete('subjects', id); loadSubjects(); }
+
+        async function openAddClassModal() {
+            const teachers = await dbGetAll('users');
+            const sel = document.getElementById('classTeacher');
+            sel.innerHTML = '<option value="">Select Teacher</option>';
+            teachers.filter(u => u.role === 'teacher').forEach(t => { const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.name; sel.appendChild(opt); });
+            openModal('classModal');
+        }
+
+        async function handleSaveClass() {
+            const sid = document.getElementById('classSubject').value, tid = document.getElementById('classTeacher').value, sch = document.getElementById('classSchedule').value.trim(), room = document.getElementById('classRoom').value.trim(), cap = document.getElementById('classCapacity').value;
+            if (!sid || !tid || !sch || !room || !cap) { alert('Fill all fields'); return; }
+            const cls = { id: 'class_' + Date.now(), subject_id: sid, teacher_id: tid, schedule: sch, room, capacity: parseInt(cap) };
+            await dbAdd('classes', cls);
+            closeModal('classModal');
+            loadClasses();
+            alert('Class added!');
+        }
+
+        async function loadClasses() {
+            const classes = await dbGetAll('classes');
+            const subjects = await dbGetAll('subjects');
+            const users = await dbGetAll('users');
+            const tbody = document.getElementById('classesTableBody');
+            tbody.innerHTML = '';
+            classes.forEach(c => {
+                const s = subjects.find(x => x.id === c.subject_id);
+                const t = users.find(x => x.id === c.teacher_id);
+                tbody.innerHTML += `<tr><td>${s?.name || 'N/A'}</td><td>${t?.name || 'N/A'}</td><td>${c.schedule}</td><td>${c.room}</td><td>${c.capacity}</td><td><button class="btn-small btn-delete" onclick="deleteClass('${c.id}')">Delete</button></td></tr>`;
+            });
+            const sel = document.getElementById('attendanceClass');
+            if (sel) {
+                sel.innerHTML = '<option value="">Select Class</option>';
+                classes.forEach(c => { const s = subjects.find(x => x.id === c.subject_id); const opt = document.createElement('option'); opt.value = c.id; opt.textContent = (s?.name || 'Unknown') + ' - ' + c.schedule; sel.appendChild(opt); });
+            }
+        }
+
+        async function deleteClass(id) { if (!confirm('Delete?')) return; await dbDelete('classes', id); loadClasses(); }
+
+        async function loadTeachers() {
+            const users = await dbGetAll('users');
+            const teachers = users.filter(u => u.role === 'teacher');
+            const tbody = document.getElementById('teachersTableBody');
+            tbody.innerHTML = '';
+            teachers.forEach(t => { tbody.innerHTML += `<tr><td>${t.name}</td><td>${t.email}</td><td>${t.identifier}</td><td>${t.department || 'N/A'}</td><td><button class="btn-small btn-delete" onclick="removeUser('${t.id}')">Remove</button></td></tr>`; });
+        }
+
+        async function loadStudents() {
+            const users = await dbGetAll('users');
+            const students = users.filter(u => u.role === 'student');
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+            students.forEach(s => { tbody.innerHTML += `<tr><td>${s.name}</td><td>${s.email}</td><td>${s.identifier}</td><td>${s.branch || 'N/A'}</td><td>${s.year || 'N/A'}</td><td><button class="btn-small btn-delete" onclick="removeUser('${s.id}')">Remove</button></td></tr>`; });
+        }
+
+        async function removeUser(id) { if (!confirm('Remove?')) return; await dbDelete('users', id); loadTeachers(); loadStudents(); }
+
+        async function openMarkAttendanceModal() { const classes = await dbGetAll('classes'); const sel = document.getElementById('attendanceClass'); sel.innerHTML = '<option value="">Select Class</option>'; classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.schedule; sel.appendChild(opt); }); openModal('attendanceModal'); }
+        async function loadStudentsForAttendance() { const cid = document.getElementById('attendanceClass').value; if (!cid) return; const users = await dbGetAll('users'); const students = users.filter(u => u.role === 'student'); const container = document.getElementById('studentAttendanceList'); container.innerHTML = ''; students.forEach(s => { container.innerHTML += `<div class="checkbox-item"><input type="checkbox" name="student_${s.id}" value="${s.id}"><label>${s.name}</label></div>`; }); }
+        async function handleMarkAttendance() { const cid = document.getElementById('attendanceClass').value, date = document.getElementById('attendanceDate').value; if (!cid || !date) { alert('Select class and date'); return; } document.querySelectorAll('#studentAttendanceList input[type="checkbox"]:checked').forEach(async s => { const a = { id: 'att_' + Date.now() + Math.random(), student_id: s.value, class_id: cid, date, status: 'present' }; await dbAdd('attendance', a); }); closeModal('attendanceModal'); loadAttendance(); alert('Marked!'); }
+        async function loadAttendance() { const atts = await dbGetAll('attendance'); const users = await dbGetAll('users'); const classes = await dbGetAll('classes'); const subjects = await dbGetAll('subjects'); const tbody = document.getElementById('attendanceTableBody'); tbody.innerHTML = ''; atts.forEach(a => { const st = users.find(u => u.id === a.student_id); const cl = classes.find(c => c.id === a.class_id); const sb = cl ? subjects.find(s => s.id === cl.subject_id) : null; tbody.innerHTML += `<tr><td>${st?.name || 'N/A'}</td><td>${sb?.name || 'N/A'}</td><td>${a.date}</td><td><span style="background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px;">Present</span></td><td><button class="btn-small btn-delete" onclick="deleteAtt('${a.id}')">Delete</button></td></tr>`; }); }
+        async function deleteAtt(id) { if (!confirm('Delete?')) return; await dbDelete('attendance', id); loadAttendance(); }
+
+        async function openAddResultModal() { const users = await dbGetAll('users'); const sel = document.getElementById('resultStudent'); sel.innerHTML = '<option value="">Select</option>'; users.filter(u => u.role === 'student').forEach(s => { const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name; sel.appendChild(opt); }); openModal('resultModal'); }
+        async function handleSaveResult() { const sid = document.getElementById('resultStudent').value, subid = document.getElementById('resultSubject').value, marks = document.getElementById('resultMarks').value, total = document.getElementById('resultTotal').value, grade = document.getElementById('resultGrade').value; if (!sid || !subid || !marks || !total) { alert('Fill all'); return; } const r = { id: 'res_' + Date.now(), student_id: sid, subject_id: subid, marks: parseInt(marks), total: parseInt(total), grade }; await dbAdd('results', r); closeModal('resultModal'); loadResults(); alert('Result added!'); }
+        async function loadResults() { const results = await dbGetAll('results'); const users = await dbGetAll('users'); const subjects = await dbGetAll('subjects'); const tbody = document.getElementById('resultsTableBody'); tbody.innerHTML = ''; results.forEach(r => { const st = users.find(u => u.id === r.student_id); const sb = subjects.find(s => s.id === r.subject_id); tbody.innerHTML += `<tr><td>${st?.name || 'N/A'}</td><td>${sb?.name || 'N/A'}</td><td>${r.marks}</td><td>${r.total}</td><td>${r.grade}</td><td><button class="btn-small btn-delete" onclick="deleteResult('${r.id}')">Delete</button></td></tr>`; }); }
+        async function deleteResult(id) { if (!confirm('Delete?')) return; await dbDelete('results', id); loadResults(); }
+
+        async function loadPendingApprovals() { const pending = await dbGetAll('pending_registrations'); const container = document.getElementById('pendingApprovalsContainer'); container.innerHTML = ''; const pendingList = pending.filter(r => r.status === 'pending'); if (pendingList.length === 0) { container.innerHTML = '<p>No pending approvals</p>'; return; } pendingList.forEach(req => { container.innerHTML += `<div style="background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);"><p><strong>${req.name}</strong> (${req.identifier}) - ${req.role}</p><p>Email: ${req.email}</p><div style="display: flex; gap: 10px; margin-top: 10px;"><button class="btn" style="width: auto; background: #27ae60;" onclick="approveReg('${req.id}', '${req.role}')">Approve</button><button class="btn" style="width: auto; background: #e74c3c;" onclick="rejectReg('${req.id}')">Reject</button></div></div>`; }); }
+        async function approveReg(regId, role) { const reg = await dbGet('pending_registrations', regId); if (!reg) return; const u = { id: 'user_' + regId, email: reg.email, identifier: reg.identifier, password: reg.password, name: reg.name, phone: reg.phone, role, status: 'approved' }; if (role === 'student') { u.branch = reg.branch; u.year = reg.year; } else { u.department = reg.department; u.subjects = reg.subjects; } await dbAdd('users', u); await dbUpdate('pending_registrations', { ...reg, status: 'approved' }); loadPendingApprovals(); alert('Approved!'); }
+        async function rejectReg(regId) { if (!confirm('Reject?')) return; const reg = await dbGet('pending_registrations', regId); await dbUpdate('pending_registrations', { ...reg, status: 'rejected' }); loadPendingApprovals(); alert('Rejected!'); }
+
+        async function loadStudentAttendance() { if (!currentUser) return; const atts = await dbGetAll('attendance'); const classes = await dbGetAll('classes'); const subjects = await dbGetAll('subjects'); const sAtts = atts.filter(a => a.student_id === currentUser.id); const container = document.getElementById('studentAttendanceContainer'); if (sAtts.length === 0) { container.innerHTML = '<p>No records</p>'; return; } let html = '<div class="table-container"><table><thead><tr><th>Subject</th><th>Present</th><th>Total</th><th>Percentage</th></tr></thead><tbody>'; const byS = {}; sAtts.forEach(a => { const c = classes.find(x => x.id === a.class_id); const s = c ? subjects.find(x => x.id === c.subject_id) : null; if (s) { if (!byS[s.id]) byS[s.id] = { subject: s, present: 0, total: 0 }; byS[s.id].total++; if (a.status === 'present') byS[s.id].present++; } }); Object.values(byS).forEach(d => { const pct = ((d.present / d.total) * 100).toFixed(1); html += `<tr><td>${d.subject.name}</td><td>${d.present}</td><td>${d.total}</td><td>${pct}%</td></tr>`; }); html += '</tbody></table></div>'; container.innerHTML = html; }
+        async function loadStudentResults() { if (!currentUser) return; const results = await dbGetAll('results'); const subjects = await dbGetAll('subjects'); const sResults = results.filter(r => r.student_id === currentUser.id); const tbody = document.getElementById('studentResultsTableBody'); tbody.innerHTML = ''; sResults.forEach(r => { const s = subjects.find(x => x.id === r.subject_id); tbody.innerHTML += `<tr><td>${s?.name || 'N/A'}</td><td>${r.marks}</td><td>${r.total}</td><td>${r.grade}</td></tr>`; }); }
+
+        async function loadTeacherClasses() { if (!currentUser) return; const classes = await dbGetAll('classes'); const subjects = await dbGetAll('subjects'); const tClasses = classes.filter(c => c.teacher_id === currentUser.id); const tbody = document.getElementById('teacherClassesTableBody'); tbody.innerHTML = ''; tClasses.forEach(c => { const s = subjects.find(x => x.id === c.subject_id); tbody.innerHTML += `<tr><td>${s?.name || 'N/A'}</td><td>${c.schedule}</td><td>${c.room}</td><td>${c.enrolled_students || 0}</td></tr>`; }); }
+
+        async function loadProfile() { const container = document.getElementById('profileContent'); container.innerHTML = `<p><strong>Name:</strong> ${currentUser.name}</p><p><strong>Email:</strong> ${currentUser.email}</p><p><strong>${currentUser.role === 'student' ? 'Roll' : 'EMP ID'}:</strong> ${currentUser.identifier}</p><p><strong>Phone:</strong> ${currentUser.phone}</p>${currentUser.branch ? `<p><strong>Branch:</strong> ${currentUser.branch}</p>` : ''}${currentUser.year ? `<p><strong>Year:</strong> ${currentUser.year}</p>` : ''}${currentUser.department ? `<p><strong>Dept:</strong> ${currentUser.department}</p>` : ''}`; }
+
+        function openModal(id) { document.getElementById(id).classList.add('show'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        document.addEventListener('click', (e) => { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); });
+    </script>
+</body>
+</html>

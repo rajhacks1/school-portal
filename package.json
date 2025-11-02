@@ -1,0 +1,9 @@
+{
+  "name": "school-portal",
+  "version": "1.0.0",
+  "description": "Complete School Management Portal",
+  "private": true,
+  "scripts": {
+    "start": "echo 'Open index.html in browser'"
+  }
+}
