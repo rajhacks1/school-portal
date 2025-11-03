@@ -202,13 +202,11 @@
                 ];
                 for (let user of defaultUsers) await dbAdd('users', user);
                 const defaultSubjects = [
-                    { id: 'subj001', code: 'CSE24PCC211', name: 'Discrete Mathematical Structures', semester: '3rd', department: 'CS', credits: 3 },
-                    { id: 'subj002', code: 'CSE24PCC212', name: 'Computer Networks', semester: '3rd', department: 'CS', credits: 3 },
-                    { id: 'subj003', code: 'CSE24PCC213', name: 'Computer Architecture and Microprocessor Systems', semester: '3rd', department: 'CS', credits: 2 },
-                    { id: 'subj004', code: 'CSE24CPE216P', name: 'Community Engagement Project', semester: '3rd', department: 'CS', credits: 2 }
-                    { id: 'subj005', code: 'CSE24HSSM217', name: 'Intellectual Property Rights', semester: '3rd', department: 'CS', credits: 2 }
-                    { id: 'subj006', code: 'CSE24VEC218P', name: 'Applications of Data Structures', semester: '3rd', department: 'CS', credits: 2 }
-                ];
+                    { id: 'subj001', code: 'CS201', name: 'Data Structures', semester: '3rd', department: 'CS', credits: 4 },
+                    { id: 'subj002', code: 'CS202', name: 'Database', semester: '4th', department: 'CS', credits: 4 },
+                    { id: 'subj003', code: 'CS203', name: 'Web Dev', semester: '4th', department: 'CS', credits: 3 },
+                    { id: 'subj004', code: 'CS204', name: 'Algorithms', semester: '3rd', department: 'CS', credits: 4 }
+                    ];
                 for (let s of defaultSubjects) await dbAdd('subjects', s);
                 const defaultClasses = [
                     { id: 'class001', subject_id: 'subj004', teacher_id: 'teacher001', schedule: 'MWF 10:00', room: 'Lab-101', capacity: 50 },
