@@ -488,8 +488,42 @@ async function loadStudentsForAttendance() {
         `;
     });
 }
-        async function handleMarkAttendance() { const cid = document.getElementById('attendanceClass').value, date = document.getElementById('attendanceDate').value; if (!cid || !date) { alert('Select class and date'); return; } document.querySelectorAll('#studentAttendanceList input[type="checkbox"]:checked').forEach(async s => { const a = { id: 'att_' + Date.now() + Math.random(), student_id: s.value, class_id: cid, date, status: 'present' }; await dbAdd('attendance', a); }); closeModal('attendanceModal'); loadAttendance(); alert('Marked!'); }
-        async function loadAttendance() { const atts = await dbGetAll('attendance'); const users = await dbGetAll('users'); const classes = await dbGetAll('classes'); const subjects = await dbGetAll('subjects'); const tbody = document.getElementById('attendanceTableBody'); tbody.innerHTML = ''; atts.forEach(a => { const st = users.find(u => u.id === a.student_id); const cl = classes.find(c => c.id === a.class_id); const sb = cl ? subjects.find(s => s.id === cl.subject_id) : null; tbody.innerHTML += `<tr><td>${st?.name || 'N/A'}</td><td>${sb?.name || 'N/A'}</td><td>${a.date}</td><td><span style="background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px;">Present</span></td><td><button class="btn-small btn-delete" onclick="deleteAtt('${a.id}')">Delete</button></td></tr>`; }); }
+        async functionasync function handleMarkAttendance() {
+    const cid = document.getElementById('attendanceClass').value;
+    const date = document.getElementById('attendanceDate').value;
+    if (!cid || !date) { alert('Select class and date'); return; }
+
+    const statusSelects = document.querySelectorAll('#studentAttendanceList select');
+    for (let sel of statusSelects) {
+        const studentId = sel.getAttribute('data-student');
+        const status = sel.value;
+        const attendanceRecord = {
+            id: 'att_' + Date.now() + Math.random(),
+            student_id: studentId,
+            class_id: cid,
+            date,
+            status
+        };
+        await dbAdd('attendance', attendanceRecord);
+    }
+
+    closeModal('attendanceModal');
+    loadAttendance();
+    alert('Attendance saved successfully!');
+}
+
+const statusColor = a.status === 'present' ? '#27ae60' : '#e74c3c';
+const statusText = a.status.charAt(0).toUpperCase() + a.status.slice(1);
+tbody.innerHTML += `
+    <tr>
+        <td>${st?.name || 'N/A'}</td>
+        <td>${sb?.name || 'N/A'}</td>
+        <td>${a.date}</td>
+        <td><span style="background: ${statusColor}; color: white; padding: 3px 8px; border-radius: 3px;">${statusText}</span></td>
+        <td><button class="btn-small btn-delete" onclick="deleteAtt('${a.id}')">Delete</button></td>
+    </tr>
+`;
+btn-delete" onclick="deleteAtt('${a.id}')">Delete</button></td></tr>`; }); }
         async function deleteAtt(id) { if (!confirm('Delete?')) return; await dbDelete('attendance', id); loadAttendance(); }
 
         async function openAddResultModal() { const users = await dbGetAll('users'); const sel = document.getElementById('resultStudent'); sel.innerHTML = '<option value="">Select</option>'; users.filter(u => u.role === 'student').forEach(s => { const opt = document.createElement('option'); opt.value = s.id; opt.textContent = s.name; sel.appendChild(opt); }); openModal('resultModal'); }
