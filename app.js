@@ -517,36 +517,47 @@ async function loadStudentsForAttendance() {
 
     const container = document.getElementById('studentAttendanceList');
     container.innerHTML = '';
-    students.forEach(student => {
-        const div = document.createElement('div');
-        div.className = 'checkbox-item';
-        div.innerHTML = `
-            <input type="checkbox" name="student_${student.id}" value="${student.id}">
-            <label>${student.name}</label>
-        `;
-        container.appendChild(div);
-    });
+students.forEach(student => {
+    const div = document.createElement('div');
+    div.className = 'attendance-row';
+    div.innerHTML = `
+        <span style="display:inline-block;min-width:120px;">${student.name}</span>
+        <label style="margin-left:10px;">
+            <input type="radio" name="attendance_${student.id}" value="present" required> Present
+        </label>
+        <label>
+            <input type="radio" name="attendance_${student.id}" value="absent" required> Absent
+        </label>
+    `;
+    container.appendChild(div);
+});
+
 }
 
 async function handleMarkAttendance() {
     const classId = document.getElementById('attendanceClass').value;
     const date = document.getElementById('attendanceDate').value;
-    const students = document.querySelectorAll('#studentAttendanceList input[type="checkbox"]:checked');
-
-    if (!classId || !date) {
-        alert('Select class and date');
-        return;
-    }
-
-    students.forEach(async student => {
+const allStudents = document.querySelectorAll('#studentAttendanceList span');
+allStudents.forEach(async span => {
+    // student.id is in the radio input name
+    const studentNameElem = span;
+    // Extract the student id from following siblings' input names
+    const radioPresent = span.parentElement.querySelector('input[type="radio"][value="present"]');
+    const name = radioPresent.name; // format: attendance_<studentid>
+    const studentId = name.replace('attendance_', '');
+    const statusRadio = span.parentElement.querySelector('input[name="attendance_' + studentId + '"]:checked');
+    if (statusRadio) {
         const attendance = {
             id: 'att_' + Date.now() + Math.random(),
-            student_id: student.value,
+            student_id: studentId,
             class_id: classId,
-            date, status: 'present'
+            date,
+            status: statusRadio.value // 'present' or 'absent'
         };
         await dbAdd('attendance', attendance);
-    });
+    }
+});
+
 
     closeModal('attendanceModal');
     loadAttendance();
@@ -571,7 +582,14 @@ async function loadAttendance() {
             <td>${student?.name || 'N/A'}</td>
             <td>${subject?.name || 'N/A'}</td>
             <td>${att.date}</td>
-            <td><span style="background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px;">Present</span></td>
+            <td>
+    ${
+        att.status === "present"
+            ? '<span style="background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px;">Present</span>'
+            : '<span style="background: #e74c3c; color: white; padding: 3px 8px; border-radius: 3px;">Absent</span>'
+    }
+</td>
+
             <td><button class="btn-small btn-delete" onclick="deleteAtt('${att.id}')">Delete</button></td>
         `;
         tbody.appendChild(row);
