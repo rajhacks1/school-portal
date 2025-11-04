@@ -468,7 +468,26 @@
         async function removeUser(id) { if (!confirm('Remove?')) return; await dbDelete('users', id); loadTeachers(); loadStudents(); }
 
         async function openMarkAttendanceModal() { const classes = await dbGetAll('classes'); const sel = document.getElementById('attendanceClass'); sel.innerHTML = '<option value="">Select Class</option>'; classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.schedule; sel.appendChild(opt); }); openModal('attendanceModal'); }
-        async function loadStudentsForAttendance() { const cid = document.getElementById('attendanceClass').value; if (!cid) return; const users = await dbGetAll('users'); const students = users.filter(u => u.role === 'student'); const container = document.getElementById('studentAttendanceList'); container.innerHTML = ''; students.forEach(s => { container.innerHTML += `<div class="checkbox-item"><input type="checkbox" name="student_${s.id}" value="${s.id}"><label>${s.name}</label></div>`; }); }
+async function loadStudentsForAttendance() {
+    const cid = document.getElementById('attendanceClass').value;
+    if (!cid) return;
+    const users = await dbGetAll('users');
+    const students = users.filter(u => u.role === 'student');
+    const container = document.getElementById('studentAttendanceList');
+    container.innerHTML = '';
+
+    students.forEach(s => {
+        container.innerHTML += `
+            <div class="checkbox-item" style="justify-content: space-between; border-bottom: 1px solid #eee; padding: 5px 0;">
+                <label>${s.name}</label>
+                <select name="attendance_status_${s.id}" data-student="${s.id}">
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                </select>
+            </div>
+        `;
+    });
+}
         async function handleMarkAttendance() { const cid = document.getElementById('attendanceClass').value, date = document.getElementById('attendanceDate').value; if (!cid || !date) { alert('Select class and date'); return; } document.querySelectorAll('#studentAttendanceList input[type="checkbox"]:checked').forEach(async s => { const a = { id: 'att_' + Date.now() + Math.random(), student_id: s.value, class_id: cid, date, status: 'present' }; await dbAdd('attendance', a); }); closeModal('attendanceModal'); loadAttendance(); alert('Marked!'); }
         async function loadAttendance() { const atts = await dbGetAll('attendance'); const users = await dbGetAll('users'); const classes = await dbGetAll('classes'); const subjects = await dbGetAll('subjects'); const tbody = document.getElementById('attendanceTableBody'); tbody.innerHTML = ''; atts.forEach(a => { const st = users.find(u => u.id === a.student_id); const cl = classes.find(c => c.id === a.class_id); const sb = cl ? subjects.find(s => s.id === cl.subject_id) : null; tbody.innerHTML += `<tr><td>${st?.name || 'N/A'}</td><td>${sb?.name || 'N/A'}</td><td>${a.date}</td><td><span style="background: #27ae60; color: white; padding: 3px 8px; border-radius: 3px;">Present</span></td><td><button class="btn-small btn-delete" onclick="deleteAtt('${a.id}')">Delete</button></td></tr>`; }); }
         async function deleteAtt(id) { if (!confirm('Delete?')) return; await dbDelete('attendance', id); loadAttendance(); }
